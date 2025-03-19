@@ -7,28 +7,30 @@ import math
 #utility functions
 #draw_plot()
 
-#non-negative weights connected graph generator
-#NOT FOR THE CORRECT GRAPH CLASS WILL FIX LATER
-def create_random_graph(nodes, edges):
+#directed weighted connected graph generator
+#int number of nodes, int number of edges, int minimum edge weight, int maximum edge weight
+def create_random_graph(nodes, edges, min_weight, max_weight): 
     # if edges exceed maximum, infinite loop
-    max = nodes*(nodes-1)//2 #formula for undirected graph max edge number
+    max = nodes*(nodes-1) #formula for directed graph max edge number
     if edges > max:
         edges = max
     
-    graph = Graph(nodes)
+    graph = Graph()
+    for i in range(nodes):
+        graph.add_node(i)
     
     #ensure it is connected
     for i in range(nodes-1):
-        graph.add_edge(i,i+1,random.randint(0,100)) # picked arbitrary max weight 
+        graph.add_edge(i,i+1,random.randint(min_weight, max_weight))
     
     for _ in range(edges-nodes+1): #node-1 number of edges have already been added
         src = random.randint(0, nodes-1)
         dst = random.randint(0, nodes-1)
-        while graph.has_edge(src, dst) or src==dst: #verifying valid src dst, if not change it
+        while graph.has_edge(src, dst) or src==dst: #verifying valid src dst, if not change it (no self-loops)
             src = random.randint(0, nodes-1)
             dst = random.randint(0, nodes-1)
             
-        graph.add_edge(src, dst, random.randint(0,100))
+        graph.add_edge(src, dst, random.randint(min_weight,max_weight))
 
     return graph
 
@@ -62,6 +64,9 @@ class Graph:
 
     def number_of_nodes(self):
         return len(self.adj)
+    
+    def has_edge(self,src,dst):
+        return dst in self.adj[src]
 
 class Node:
     def __init__(self, value, key=float('inf')):

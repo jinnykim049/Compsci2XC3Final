@@ -1,6 +1,7 @@
 import matplotlib
 import numpy
 import random
+import math
 
 #utility functions
 #draw_plot()
@@ -73,9 +74,31 @@ def dijkstra(graph, source, k):
 #2.2 Bellman Ford's
 def bellman_ford(graph, source, k):
 
-    #implementation
+    #initialization
+    dist = {}
+    prev = {}
+    
+    for i in graph.adj:
+        dist[i] = math.inf
+        prev[i] = None
+        
+    dist[source] = 0
+    
+    #edge relaxation
+    for _ in range(k): #only k times
+        
+        for src in graph.adj:
+            for dst in graph.adj[src]: #two for loops together gets every edge (src, dst)
+                
+                # if shorter path found, update dist and prev
+                if dist[src] + graph.w(src,dst) < dist[dst]:
+                    dist[dst] = dist[src] + graph.w(src,dst)
+                    prev[dst] = src
+    
+    # no negative cycle detection because that depended on relaxing more than V-1 times, 
+    # but 2.2 dictates relaxing k times exactly. 
+    return dist, prev
 
-    return
 
 #2.3 Experiment
 def experiment_A():

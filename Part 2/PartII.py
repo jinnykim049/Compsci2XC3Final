@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 import random
 import math
 import tracemalloc
@@ -209,7 +209,7 @@ def bellman_ford(graph, source, k):
 #2.3 Experiment
 def experiment_A():
 
-    sizes = [10, 50, 100, 200]
+    sizes = [10, 50]
     densities = [0.1, 0.5, 0.9]
     k_values = [1, 3, 5]
 
@@ -218,7 +218,7 @@ def experiment_A():
     for size in sizes:
         for density in densities:
             edges = int(density * (size) * (size - 1)) # for directed weighted graph
-            graph = create_random_graph
+            graph = create_random_graph(size, edges, 1, 10 )
 
             for k in k_values:
 
@@ -237,12 +237,12 @@ def experiment_A():
                 tracemalloc.stop()
 
                 # run both of them with max possible relextion steps (k = N-1)
-                _, dijkstra_optimal = dijkstra(graph, 0, size - 1)
-                _, bellman_optimal = bellman_ford(graph, 0, size - 1)
+                dijkstra_optimal_diatance, _ = dijkstra(graph, 0, size - 1)
+                bellman_optimal_disance, _ = bellman_ford(graph, 0, size - 1)
 
                 # for the accuracy. The number of times that distance matches with optimal distance, and divided by the total size
-                dijkstra_accuracy = sum(1 for node in dijkstra_distance if dijkstra_distance[node] == dijkstra_optimal[node]) / size
-                bellman_accuracy = sum(1 for node in bellman_distance if bellman_distance[node] == bellman_optimal[node]) / size
+                dijkstra_accuracy = sum(1 for node in dijkstra_distance if dijkstra_distance[node] == dijkstra_optimal_diatance[node]) / size
+                bellman_accuracy = sum(1 for node in bellman_distance if bellman_distance[node] == bellman_optimal_disance[node]) / size
 
                 result.append({
                     "size": size,
@@ -258,67 +258,64 @@ def experiment_A():
 
     plot_result(result)
 
-
-
 def plot_result(result):
-    time_results = {}
-    memory_results = {}
-    accuracy_results = {}
+    # Extract data into separate lists
+    labels = []
 
-    for result in result:
-        key = (result["size"], result["density"], result["k"])
-    
-        if key not in time_results:
-            time_results[key] = {"dijkstra": [], "bellman": []}
-        time_results[key]["dijkstra"].append(result["dijkstra_time"])
-        time_results[key]["bellman"].append(result["bellman_time"])
+    dijkstra_time = []
+    bellman_time = []
 
-   
-        if key not in memory_results:
-            memory_results[key] = {"dijkstra": [], "bellman": []}
-        memory_results[key]["dijkstra"].append(result["dijkstra_memory"])
-        memory_results[key]["bellman"].append(result["bellman_memory"])
+    dijkstra_memory = []
+    bellman_memory = []
 
-   
-        if key not in accuracy_results:
-            accuracy_results[key] = {"dijkstra": [], "bellman": []}
-        accuracy_results[key]["dijkstra"].append(result["dijkstra_accuracy"])
-        accuracy_results[key]["bellman"].append(result["bellman_accuracy"])
+    dijkstra_accuracy = []
+    bellman_accuracy = []
 
-    fig, axs = plt.subplots(1, 3, figsize=(18, 6))
+    for entry in result:
+        labels.append((entry["size"], entry["density"], entry["k"]))
+        
+        dijkstra_time.append(entry["dijkstra_time"])
+        bellman_time.append(entry["bellman_time"])
+        
+        dijkstra_memory.append(entry["dijkstra_memory"])
+        bellman_memory.append(entry["bellman_memory"])
+        
+        dijkstra_accuracy.append(entry["dijkstra_accuracy"])
+        bellman_accuracy.append(entry["bellman_accuracy"])
 
-    # Time Plot
-    axs[0].set_title('Execution Time (seconds)')
-    axs[0].set_xlabel('Graph Size and Density (size, density, k)')
-    axs[0].set_ylabel('Time (seconds)')
-    for key in time_results:
-        size, density, k = key
-        axs[0].plot([k for _ in range(len(time_results[key]["dijkstra"]))], time_results[key]["dijkstra"], label=f'Dijkstra: size={size}, density={density}')
-        axs[0].plot([k for _ in range(len(time_results[key]["bellman"]))], time_results[key]["bellman"], label=f'Bellman-Ford: size={size}, density={density}')
-    axs[0].legend()
+    x = np.arange(len(labels)) 
+    width = 0.35  
 
-    # Memory Plot
-    axs[1].set_title('Memory Usage (bytes)')
-    axs[1].set_xlabel('Graph Size and Density (size, density, k)')
-    axs[1].set_ylabel('Memory Usage (bytes)')
-    for key in memory_results:
-        size, density, k = key
-        axs[1].plot([k for _ in range(len(memory_results[key]["dijkstra"]))], memory_results[key]["dijkstra"], label=f'Dijkstra: size={size}, density={density}')
-        axs[1].plot([k for _ in range(len(memory_results[key]["bellman"]))], memory_results[key]["bellman"], label=f'Bellman-Ford: size={size}, density={density}')
-    axs[1].legend()
+    def create_bar_chart(y1, y2, title, ylabel, xlabel):
+        plt.figure()  # Create a new figure
+        plt.bar(x - width/2, y1, width, label='Dijkstra', color='b')
+        plt.bar(x + width/2, y2, width, label='Bellman-Ford', color='r')
+        plt.title(title)
+        plt.ylabel(ylabel)
+        plt.xlabel(xlabel)
 
-    # Accuracy Plot
-    axs[2].set_title('Algorithm Accuracy')
-    axs[2].set_xlabel('Graph Size and Density (size, density, k)')
-    axs[2].set_ylabel('Accuracy (%)')
-    for key in accuracy_results:
-        size, density, k = key
-        axs[2].plot([k for _ in range(len(accuracy_results[key]["dijkstra"]))], accuracy_results[key]["dijkstra"], label=f'Dijkstra: size={size}, density={density}')
-        axs[2].plot([k for _ in range(len(accuracy_results[key]["bellman"]))], accuracy_results[key]["bellman"], label=f'Bellman-Ford: size={size}, density={density}')
-    axs[2].legend()
+        
 
-    plt.tight_layout()
-    plt.show()
+        actual_labels = [f"Size: {label[0]}, Density: {label[1]}, k: {label[2]}" for label in labels]
+        
+        # Apply xticks with rotation to set the labels under the bars
+        plt.xticks(x, actual_labels, rotation=45, ha="right", fontsize=10)
 
-# Run the experiment
+        # Add custom text annotations for size, density, and k values below the bars
+        for i, (size, density, k) in enumerate(labels):
+            # Add size, density, k text below the bars
+            y_offset = -max(y1 + y2) * 0.1  # Adjust the vertical offset
+            plt.text(x[i], y_offset, f"{size}", color='red', ha="center", fontsize=10)
+            plt.text(x[i], y_offset - max(y1 + y2) * 0.05, f"{density}", color='blue', ha="center", fontsize=10)
+            plt.text(x[i], y_offset - max(y1 + y2) * 0.1, f"{k}", color='green', ha="center", fontsize=10)
+
+
+        plt.legend()
+        plt.show()  
+
+    create_bar_chart(dijkstra_time, bellman_time, 'Execution Time (seconds)', 'Time (seconds)', 'Size, Density, k_value')
+    create_bar_chart(dijkstra_memory, bellman_memory, 'Memory Usage (bytes)', 'Memory (bytes)', 'Size, Density, k_value')
+    create_bar_chart(dijkstra_accuracy, bellman_accuracy, 'Algorithm Accuracy', 'Accuracy (%)', 'Size, Density, k_value')
+
+
 experiment_A()

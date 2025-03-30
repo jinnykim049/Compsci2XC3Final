@@ -19,19 +19,29 @@ def A_Star(graph, source, destination, heuristic):
     dist = {node: float('inf') for node in graph.adj}
     prev = {node: None for node in graph.adj}
     dist[source] = 0
-    pq = [Node(source, heuristic[source])]
+    pq = [Node(source, heuristic[source])]#f's are computed as needed
+    
+    seen = set()
 
     while pq:
         u = heapq.heappop(pq).value
+        if u in seen: #dijkstra processes each node once
+            continue
         
         if u == destination:
             return prev, dist[u]
+        
+        seen.add(u)
 
         for v in graph.adj[u]:
             alt = dist[u] + graph.weights[(u, v)]
             if alt < dist[v]:
                 dist[v] = alt
                 prev[v] = u
+                if v in seen: #limits duplicates in the pq
+                    continue
+                #might still have dupes but need to make sure smallest f is in pq
+                #so it's like a primitive decrease_key lol
                 heapq.heappush(pq,Node(v,alt + heuristic[v]))
                 
 

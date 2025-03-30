@@ -24,6 +24,7 @@ def create_random_graph(nodes, edges, min_weight, max_weight):
     #ensure it is connected
     for i in range(nodes-1):
         graph.add_edge(i,i+1,random.randint(min_weight, max_weight))
+    graph.add_edge(nodes-1,0,random.randint(min_weight,max_weight)) #all nodes reachable
     
     for _ in range(edges-nodes+1): #node-1 number of edges have already been added
         src = random.randint(0, nodes-1)

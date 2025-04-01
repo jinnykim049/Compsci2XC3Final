@@ -1,4 +1,6 @@
 import csv
+import math
+import time
 
 # data structures and useful functions
 
@@ -50,10 +52,24 @@ class Graph():
         # because it is undirected
         return total/2
 
+#takes in the IDs of two stations and computes the euclidean distance between them
+#uses the longitude and latitude of the stations from the stations dictionary
+def station_dist(a, b):
+    
+    latA = stations[a][0]
+    lonA = stations[a][1]
+    
+    latB = stations[b][0]
+    lonB = stations[b][1]
+    
+    dist = math.sqrt((latB - latA)**2 + (lonB - lonA)**2)
+    
+    return dist
+
 
 # data processing
 
-stations = {}
+stations = {} #Example data: {1: [51.5028,-0.2801,"Acton Town","Acton<br />Town",3,2,0]}
 # process london_stations.csv into a dictionary
 
 l = [i for i in range(1,304)]
@@ -62,6 +78,15 @@ theTube = Graph(l)
 
 
 # searching algorithms
+
+# reconstruct path function with line count
+
+# src dst dijkstra on undirected g
+
+# A* heuristic function
+
+# src dst A* on undirected g
+
 
 
 # experiments

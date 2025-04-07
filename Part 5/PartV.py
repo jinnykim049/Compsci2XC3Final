@@ -137,8 +137,6 @@ class MinHeap:
 #takes in the IDs of two stations and computes the euclidean distance between them
 #uses the longitude and latitude of the stations from the stations dictionary
 def station_dist(a, b):
-    
- 
     latA = stations[a]["lat"]
     lonA = stations[a]["lon"]
     latB = stations[b]["lat"]
@@ -250,7 +248,7 @@ def calculate_euclidean_distance(lat1, lon1, lat2, lon2):
     return math.sqrt((lat2 - lat1) ** 2 + (lon2 - lon1) ** 2)
 
 def build_tube_graph_from_stations_and_connections(stations_csv, connections_csv):
- 
+
     # Parse stations data (from stations CSV)---------------------------------------------------------
     stations = {}
     csv_reader = csv.reader(StringIO(stations_csv))
@@ -327,8 +325,8 @@ with open("Part 5/london_connections.csv", "r", encoding="utf-8") as file:
 graph, stations = build_tube_graph_from_stations_and_connections(stations_csv, connections_csv) 
 print(graph.get_graph())  
 print(graph.get_weight(1,234)) 
-   
- 
+
+
 # experiments ----------------------------------------------
 station_lines = {s: set() for s in stations}
 for (u, v), line in graph.line.items():
@@ -337,7 +335,7 @@ for (u, v), line in graph.line.items():
 
 def pair_type(src, dst, transfers):
     if transfers == 0:
-       return "same_line"
+        return "same_line"
     elif transfers == 1:
         return "adjacent_line"
     else:

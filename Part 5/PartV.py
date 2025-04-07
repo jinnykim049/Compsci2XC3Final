@@ -332,50 +332,82 @@ for (u, v), line in graph.line.items():
     station_lines[u].add(line)
     station_lines[v].add(line)
 
-def pair_type(src, dst):
+def pair_type(src, dst, transfers):
     if transfers == 1:
        return "same_line"
     elif transfers == 2:
         return "adjacent_line"
     else:
         return "multi_transfer"
+    
+known_same_line_pairs = [
+    (1, 52),     
+    (73, 182),  
+    (11, 83),   
+    (4, 27),     
+    (74, 287),  
+]
 
+for src, dst in known_same_line_pairs:
+    print(f"\nTesting: {src} → {dst}")
 
-results = []
-station_ids = list(stations.keys())
-sample_pairs = random.sample([(a, b) for a in station_ids for b in station_ids if a != b], 200)
-
-for src, dst in sample_pairs:
+    # Dijkstra
     t1 = time.perf_counter()
-    dijkstra_result, _ = dijkstra(graph, src, dst)
+    dijkstra_result, d_len = dijkstra(graph, src, dst)
     dijkstra_time = time.perf_counter() - t1
 
+    # A*
     t2 = time.perf_counter()
-    astar_result, _ = A_Star(graph, src, dst)
+    astar_result, a_len = A_Star(graph, src, dst)
     astar_time = time.perf_counter() - t2
 
     if dijkstra_result == math.inf or astar_result == math.inf:
+        print("No path found.")
         continue
 
-    _, transfers = dijkstra_result
+    path, transfers = dijkstra_result
+    print("Path:", path)
+    print("Transfers:", transfers)
+    print("Dijkstra Time:", round(dijkstra_time, 6), "seconds")
+    print("A* Time:", round(astar_time, 6), "seconds")
+    print("Pair Type:", pair_type(src, dst, transfers))
+
+
+# results = []
+# station_ids = list(stations.keys())
+# sample_pairs = random.sample([(a, b) for a in station_ids for b in station_ids if a != b], 200)
+
+# for src, dst in sample_pairs:
+#     t1 = time.perf_counter()
+#     dijkstra_result, _ = dijkstra(graph, src, dst)
+#     dijkstra_time = time.perf_counter() - t1
+
+#     t2 = time.perf_counter()
+#     astar_result, _ = A_Star(graph, src, dst)
+#     astar_time = time.perf_counter() - t2
+
+#     if dijkstra_result == math.inf or astar_result == math.inf:
+#         continue
+
+#     _, transfers = dijkstra_result
     
-    print(f"{src} → {dst}: {pair_type(src, dst)}")
-    results.append({
-        "src": src,
-        "dst": dst,
-        "dijkstra_time": dijkstra_time,
-        "astar_time": astar_time,
-        "transfers": transfers,
-        "pair_type": pair_type(src, dst)
-    })
-df = pd.DataFrame(results)
-for ptype in ["same_line", "adjacent_line", "multi_transfer"]:
-    subset = df[df["pair_type"] == ptype]
-    print(f"\n--- {ptype.upper()} ---")
-    print("Avg Dijkstra Time:", subset["dijkstra_time"].mean())
-    print("Avg A* Time:      ", subset["astar_time"].mean())
-    print("Avg Transfers:    ", subset["transfers"].mean())
-    print("Sample Size:      ", len(subset))
+#     print(f"{src} → {dst}: {pair_type(src, dst)}")
+#     results.append({
+#         "src": src,
+#         "dst": dst,
+#         "dijkstra_time": dijkstra_time,
+#         "astar_time": astar_time,
+#         "transfers": transfers,
+#         "pair_type": pair_type(src, dst)
+#     })
+# df = pd.DataFrame(results)
+# for ptype in ["same_line", "adjacent_line", "multi_transfer"]:
+#     subset = df[df["pair_type"] == ptype]
+#     print(f"\n--- {ptype.upper()} ---")
+#     print("Avg Dijkstra Time:", subset["dijkstra_time"].mean())
+#     print("Avg A* Time:      ", subset["astar_time"].mean())
+#     print("Avg Transfers:    ", subset["transfers"].mean())
+#     print("Sample Size:      ", len(subset))
 
 # pair_types = ["same_line", "adjacent_line", "multi_transfer"]
 # avg_dijkstra = []

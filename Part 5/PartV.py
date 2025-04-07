@@ -5,57 +5,58 @@ import heapq
 import pandas as pd
 import random
 import matplotlib.pyplot as plt
+from io import StringIO
 
 # data structures and useful functions ----------------------------------------------
-
-class Graph():
-    # weighted (undirected) graph implementation from lecture notes:
+class WeightedGraph: 
+    # using adjacency list
     def __init__(self, nodes):
-        self.graph = {}
-        self.weight = {}
-        for i in range(nodes):
-            self.graph[i] = []
+        self.graph = {} #Dictionary to store adjacency lists for each node.
+        self.weight={} #Dictionary to store weights of edges 
         self.line = {}
-
-    def are_connected(self, node1, node2):
-        for node in self.adj[node1]:
-            if node == node2:
-                return True
-        return False
-
-    def connected_nodes(self, node):
-        return self.graph[node]
-
-    def add_node(self,):
-        #add a new node number = length of existing node
-        self.graph[len(self.graph)] = []
-
-    def add_edge(self, node1, node2, weight, line):
-        if node1 not in self.graph[node2]:
-            self.graph[node1].append(node2)
-            self.weight[(node1, node2)] = weight
-            self.line[(node1, node2)] = line
-
-            #since it is undirected
-            self.graph[node2].append(node1)
-            self.weight[(node2, node1)] = weight
-            self.line[(node2, node1)] = line
-
-    def number_of_nodes(self,):
-        return len(self.graph)
-
+        for i in range(nodes): #because station starts from id 1 
+            self.graph[i] = []
+        
     def has_edge(self, src, dst):
-        return dst in self.graph[src] 
+        return dst in self.graph[src]
+    
+    def add_edge(self,src,dst,weight,line=None):
 
-    def get_weight(self,):
+        if not self.has_edge(src,dst): #Prevent duplicate edges 
+            self.graph[src].append(dst)
+            self.weight[(src,dst)]=weight
+            if line is not None:
+                self.line[(src, dst)] = line
+
+            self.graph[dst].append(src)
+            self.weight[(dst,src)]= weight #Store weight for both directions 
+            if line is not None:
+                self.line[(dst, src)] = line
+
+
+    def get_total_weight(self,):
         total = 0
-        for node1 in self.graph:
-            for node2 in self.graph[node1]:
-                total += self.weight[(node1, node2)]
-                
-        # because it is undirected
-        return total/2
+        for src, neighbors in enumerate(self.graph): #src: current node, enumerate - 0 value, 1 value, 2 value..
+            for dst in neighbors: #src value is fixed, dst is iterated within neighbors until its done. 
+                    total+= self.weight[(src,dst)]
 
+        return total/2 #Divide by 2 to avoid double counting (ex: 0->1 and 1->0, they are the same.)
+
+    def get_graph(self,):
+        return self.graph
+    
+
+    #get the weight of the edge between node1 and node2.
+    def get_weight(self, node1, node2):
+        if (node1,node2) in self.weight:
+            return self.weight[(node1,node2)]
+        else:
+            return "No distance: Station1 and Station2 are not neighbors"
+        
+    
+    def get_size(self,):
+        return len(self.graph)  
+    
 class Node:
     def __init__(self, value, key=float('inf')):
         self.value = value   
@@ -143,17 +144,6 @@ def station_dist(a, b):
     latB = stations[b]["lat"]
     lonB = stations[b]["lon"]
     return math.sqrt((latB - latA) ** 2 + (lonB - lonA) ** 2)
-
-
-
-# data processing ----------------------------------------------
-
-stations = {} #Example data: {1: [51.5028,-0.2801,"Acton Town","Acton<br />Town",3,2,0]}
-# process london_stations.csv into a dictionary
-
-l = [i for i in range(1,304)]
-theTube = Graph(len(l))
-# process london_connections.csv into a graph
 
 
 # searching algorithms ----------------------------------------------
@@ -252,67 +242,8 @@ def A_Star(graph, source, destination):
                 
     return math.inf #PATH NOT FOUND
 
-import csv
-from io import StringIO
-import math
 
-
-class WeightedGraph: 
-    # using adjacency list
-    def __init__(self, nodes):
-        self.graph = {} #Dictionary to store adjacency lists for each node.
-        self.weight={} #Dictionary to store weights of edges 
-        self.line = {}
-        for i in range(nodes): #because station starts from id 1 
-            self.graph[i] = []
-        
-    def has_edge(self, src, dst):
-        return dst in self.graph[src]
-    
-    def add_edge(self,src,dst,weight,line=None):
-
-        if not self.has_edge(src,dst): #Prevent duplicate edges 
-            self.graph[src].append(dst)
-            self.weight[(src,dst)]=weight
-            if line is not None:
-                self.line[(src, dst)] = line
-
-            self.graph[dst].append(src)
-            self.weight[(dst,src)]= weight #Store weight for both directions 
-            if line is not None:
-                self.line[(dst, src)] = line
-
-
-    def get_total_weight(self,):
-        total = 0
-        for src, neighbors in enumerate(self.graph): #src: current node, enumerate - 0 value, 1 value, 2 value..
-            for dst in neighbors: #src value is fixed, dst is iterated within neighbors until its done. 
-                    total+= self.weight[(src,dst)]
-
-        return total/2 #Divide by 2 to avoid double counting (ex: 0->1 and 1->0, they are the same.)
-
-    def get_graph(self,):
-        return self.graph
-    
-
-    #get the weight of the edge between node1 and node2.
-    def get_weight(self, node1, node2):
-        if (node1,node2) in self.weight:
-            return self.weight[(node1,node2)]
-        else:
-            return "No distance: Station1 and Station2 are not neighbors"
-        
-    
-    def get_size(self,):
-        return len(self.graph)  
-    
-
-
-
-
-
-
-
+#data processing
 #----------------------------------------------------------------------------------------------------------------------------
 
 def calculate_euclidean_distance(lat1, lon1, lat2, lon2):

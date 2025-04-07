@@ -1,4 +1,5 @@
 import csv
+<<<<<<< HEAD
 import math
 import time
 import heapq
@@ -248,3 +249,141 @@ def A_Star(graph, source, destination):
 
 
 # experiments ----------------------------------------------
+=======
+from io import StringIO
+import math
+
+
+class WeightedGraph: 
+    # using adjacency list
+    def __init__(self, nodes):
+        self.graph = {} #Dictionary to store adjacency lists for each node.
+        self.weight={} #Dictionary to store weights of edges 
+        for i in range(nodes): #because station starts from id 1 
+            self.graph[i] = []
+        
+    def has_edge(self, src, dst):
+        return dst in self.graph[src]
+    
+    def add_edge(self,src,dst,weight):
+
+        if not self.has_edge(src,dst): #Prevent duplicate edges 
+            self.graph[src].append(dst)
+            self.weight[(src,dst)]=weight
+
+            self.graph[dst].append(src)
+            self.weight[(dst,src)]= weight #Store weight for both directions 
+
+
+    def get_total_weight(self,):
+        total = 0
+        for src, neighbors in enumerate(self.graph): #src: current node, enumerate - 0 value, 1 value, 2 value..
+            for dst in neighbors: #src value is fixed, dst is iterated within neighbors until its done. 
+                    total+= self.weight[(src,dst)]
+
+        return total/2 #Divide by 2 to avoid double counting (ex: 0->1 and 1->0, they are the same.)
+
+    def get_graph(self,):
+        return self.graph
+    
+
+    #get the weight of the edge between node1 and node2.
+    def get_weight(self, node1, node2):
+        if (node1,node2) in self.weight:
+            return self.weight[(node1,node2)]
+        else:
+            return "No distance: Station1 and Station2 are not neighbors"
+        
+    
+    def get_size(self,):
+        return len(self.graph)  
+    
+
+
+
+
+
+
+
+#----------------------------------------------------------------------------------------------------------------------------
+
+def calculate_euclidean_distance(lat1, lon1, lat2, lon2):
+    return math.sqrt((lat2 - lat1) ** 2 + (lon2 - lon1) ** 2)
+
+def build_tube_graph_from_stations_and_connections(stations_csv, connections_csv):
+ 
+    # Parse stations data (from stations CSV)---------------------------------------------------------
+    stations = {}
+    csv_reader = csv.reader(StringIO(stations_csv))
+    next(csv_reader)  # Skip header row
+    
+    for row in csv_reader:
+        if not row or len(row) < 8:
+            continue
+        
+        station_id = int(row[0])
+        lat = float(row[1]) if row[1] else None
+        lon = float(row[2]) if row[2] else None
+        name = row[3].strip('"')
+        display_name = row[4].strip('"') if row[4] and row[4] != "NULL" else name
+        zone = row[6]
+        total_lines = int(row[7]) if row[7] else 0
+        rail = int(row[8]) if len(row) > 8 and row[8] else 0
+        
+        stations[station_id] = {
+            "id": station_id,
+            "name": name,
+            "display_name": display_name,
+            "lat": lat,
+            "lon": lon,
+            "zone": zone,
+            "total_lines": total_lines,
+            "rail": rail,
+        }
+    #-----------------------------------------------------------------------------------------------
+    
+    # Create the graph with number of stations
+    max_station_id = max(stations.keys()) if stations else 0
+    graph = WeightedGraph(max_station_id + 1)
+    
+    # Parse connections data (from connections CSV)
+    csv_reader = csv.reader(StringIO(connections_csv))
+    next(csv_reader)  # Skip header row
+
+    # Now connect each station based on the provided connections
+    for row in csv_reader:
+        if not row or len(row) < 4:
+            continue
+        
+        station1_id = int(row[0])
+        station2_id = int(row[1])
+        
+        # Check if both stations exist in the station dictionary
+        if station1_id in stations and station2_id in stations:
+            lat1, lon1 = stations[station1_id]["lat"], stations[station1_id]["lon"]
+            lat2, lon2 = stations[station2_id]["lat"], stations[station2_id]["lon"]
+            
+            # Calculate Euclidean distance between the stations
+            if lat1 is not None and lon1 is not None and lat2 is not None and lon2 is not None:
+                distance = calculate_euclidean_distance(lat1, lon1, lat2, lon2)
+                graph.weight[(station1_id,station2_id)]= distance
+                
+                # Add the edge to the graph with time as weight
+                graph.add_edge(station1_id, station2_id, distance)
+    
+    return graph, stations
+
+# Read the CSV files
+with open("london_stations.csv", "r", encoding="utf-8") as file:
+    stations_csv = file.read()
+
+with open("london_connections.csv", "r", encoding="utf-8") as file:
+    connections_csv = file.read()
+
+# Run the function
+graph, stations = build_tube_graph_from_stations_and_connections(stations_csv, connections_csv) 
+print(graph.get_graph())  
+print(graph.get_weight(1,234)) 
+   
+  
+>>>>>>> b80e538 (Part5)

@@ -1,8 +1,10 @@
 import csv
-<<<<<<< HEAD
 import math
 import time
 import heapq
+import pandas as pd
+import random
+import matplotlib.pyplot as plt
 
 # data structures and useful functions ----------------------------------------------
 
@@ -135,15 +137,13 @@ class MinHeap:
 #uses the longitude and latitude of the stations from the stations dictionary
 def station_dist(a, b):
     
-    latA = stations[a][0]
-    lonA = stations[a][1]
-    
-    latB = stations[b][0]
-    lonB = stations[b][1]
-    
-    dist = math.sqrt((latB - latA)**2 + (lonB - lonA)**2)
-    
-    return dist
+ 
+    latA = stations[a]["lat"]
+    lonA = stations[a]["lon"]
+    latB = stations[b]["lat"]
+    lonB = stations[b]["lon"]
+    return math.sqrt((latB - latA) ** 2 + (lonB - lonA) ** 2)
+
 
 
 # data processing ----------------------------------------------
@@ -152,7 +152,7 @@ stations = {} #Example data: {1: [51.5028,-0.2801,"Acton Town","Acton<br />Town"
 # process london_stations.csv into a dictionary
 
 l = [i for i in range(1,304)]
-theTube = Graph(l)
+theTube = Graph(len(l))
 # process london_connections.csv into a graph
 
 
@@ -165,13 +165,18 @@ def reconstruct_path(graph, dict, dst):
     path = [dst]
     prev_node = dict[dst]
     while prev_node is not None:
-        path.append[prev_node]
+        path.append(prev_node)
         prev_node = dict[prev_node]
     path.reverse()
     
     lines = set()
     for i in range(len(path) - 1):
-        lines.add(graph.line[(path[i],path[i+1])])
+      
+        u, v = path[i], path[i + 1]
+        if (u, v) in graph.line:
+            lines.add(graph.line[(u, v)])
+        elif (v, u) in graph.line:
+            lines.add(graph.line[(v, u)])
     
     line_num = len(lines)
     # if 1, no transfers
@@ -187,11 +192,11 @@ def dijkstra(graph, source, destination):
     #Initialization
     dist = {}
     prev = {}
-    for node in graph.adj:
+    for node in graph.graph:
         dist[node] = math.inf
         prev[node] = None
     dist[source] = 0
-    pq = MinHeap([Node(node, dist[node]) for node in graph.adj])
+    pq = MinHeap([Node(node, dist[node]) for node in graph.graph])
 
     while not pq.is_empty():
         u = pq.extract_min().value
@@ -199,8 +204,8 @@ def dijkstra(graph, source, destination):
         if u == destination:
             return reconstruct_path(graph, prev, destination), dist[destination]
 
-        for v in graph.adj[u]:
-            alt = dist[u] + graph.weights[(u, v)]
+        for v in graph.graph[u]:
+            alt = dist[u] + graph.weight[(u, v)]
             if alt < dist[v]:
                 dist[v] = alt
                 prev[v] = u
@@ -215,7 +220,7 @@ def A_Star(graph, source, destination):
     #Initialization
     dist = {}
     prev = {}
-    for node in graph.adj:
+    for node in graph.graph:
         dist[node] = math.inf
         prev[node] = None
     dist[source] = 0
@@ -225,7 +230,7 @@ def A_Star(graph, source, destination):
     seen = set()
 
     while pq:
-        u = heapq.heappop(pq).value
+        _, u = heapq.heappop(pq)
         if u in seen: #dijkstra processes each node only once
             continue #only added because of the awkward way i used heapq ;-;
         
@@ -234,8 +239,8 @@ def A_Star(graph, source, destination):
         
         seen.add(u)
 
-        for v in graph.adj[u]:
-            alt = dist[u] + graph.weights[(u, v)]
+        for v in graph.graph[u]:
+            alt = dist[u] + graph.weight[(u, v)]
             if alt < dist[v]:
                 dist[v] = alt
                 prev[v] = u
@@ -247,9 +252,7 @@ def A_Star(graph, source, destination):
                 
     return math.inf #PATH NOT FOUND
 
-
-# experiments ----------------------------------------------
-=======
+import csv
 from io import StringIO
 import math
 
@@ -259,20 +262,25 @@ class WeightedGraph:
     def __init__(self, nodes):
         self.graph = {} #Dictionary to store adjacency lists for each node.
         self.weight={} #Dictionary to store weights of edges 
+        self.line = {}
         for i in range(nodes): #because station starts from id 1 
             self.graph[i] = []
         
     def has_edge(self, src, dst):
         return dst in self.graph[src]
     
-    def add_edge(self,src,dst,weight):
+    def add_edge(self,src,dst,weight,line=None):
 
         if not self.has_edge(src,dst): #Prevent duplicate edges 
             self.graph[src].append(dst)
             self.weight[(src,dst)]=weight
+            if line is not None:
+                self.line[(src, dst)] = line
 
             self.graph[dst].append(src)
             self.weight[(dst,src)]= weight #Store weight for both directions 
+            if line is not None:
+                self.line[(dst, src)] = line
 
 
     def get_total_weight(self,):
@@ -357,7 +365,8 @@ def build_tube_graph_from_stations_and_connections(stations_csv, connections_csv
         
         station1_id = int(row[0])
         station2_id = int(row[1])
-        
+        line_id = row[2]
+
         # Check if both stations exist in the station dictionary
         if station1_id in stations and station2_id in stations:
             lat1, lon1 = stations[station1_id]["lat"], stations[station1_id]["lon"]
@@ -374,10 +383,10 @@ def build_tube_graph_from_stations_and_connections(stations_csv, connections_csv
     return graph, stations
 
 # Read the CSV files
-with open("london_stations.csv", "r", encoding="utf-8") as file:
+with open("Part 5/london_stations.csv", "r", encoding="utf-8") as file:
     stations_csv = file.read()
 
-with open("london_connections.csv", "r", encoding="utf-8") as file:
+with open("Part 5/london_connections.csv", "r", encoding="utf-8") as file:
     connections_csv = file.read()
 
 # Run the function
@@ -385,5 +394,94 @@ graph, stations = build_tube_graph_from_stations_and_connections(stations_csv, c
 print(graph.get_graph())  
 print(graph.get_weight(1,234)) 
    
-  
->>>>>>> b80e538 (Part5)
+ 
+# experiments ----------------------------------------------
+station_lines = {s: set() for s in stations}
+for (u, v), line in graph.line.items():
+    station_lines[u].add(line)
+    station_lines[v].add(line)
+
+def pair_type(src, dst):
+    shared = station_lines[src] & station_lines[dst]#share the same src and dst
+    if shared:
+        return "same_line"
+    elif any(station_lines[dst] & station_lines[n] for n in graph.graph[src]):# share same dst, does not directlly connect with src but through another point
+        return "adjacent_line"
+    else:
+        return "multi_transfer"
+
+
+results = []
+station_ids = list(stations.keys())
+sample_pairs = random.sample([(a, b) for a in station_ids for b in station_ids if a != b], 200)
+
+for src, dst in sample_pairs:
+    t1 = time.perf_counter()
+    dijkstra_result, _ = dijkstra(graph, src, dst)
+    dijkstra_time = time.perf_counter() - t1
+
+    t2 = time.perf_counter()
+    astar_result, _ = A_Star(graph, src, dst)
+    astar_time = time.perf_counter() - t2
+
+    if dijkstra_result == math.inf or astar_result == math.inf:
+        continue
+
+    _, transfers = dijkstra_result
+    
+    print(f"{src} → {dst}: {pair_type(src, dst)}")
+    results.append({
+        "src": src,
+        "dst": dst,
+        "dijkstra_time": dijkstra_time,
+        "astar_time": astar_time,
+        "transfers": transfers,
+        "pair_type": pair_type(src, dst)
+    })
+df = pd.DataFrame(results)
+for ptype in ["same_line", "adjacent_line", "multi_transfer"]:
+    subset = df[df["pair_type"] == ptype]
+    print(f"\n--- {ptype.upper()} ---")
+    print("Avg Dijkstra Time:", subset["dijkstra_time"].mean())
+    print("Avg A* Time:      ", subset["astar_time"].mean())
+    print("Avg Transfers:    ", subset["transfers"].mean())
+    print("Sample Size:      ", len(subset))
+
+# pair_types = ["same_line", "adjacent_line", "multi_transfer"]
+# avg_dijkstra = []
+# avg_astar = []
+# avg_transfers = []
+# counts = []
+
+# #  Runtime Comparison 
+# x = range(len(pair_types))
+# width = 0.35
+
+# plt.figure(figsize=(10, 6))
+# plt.bar(x, avg_dijkstra, width=width, label="Dijkstra", align="center")
+# plt.bar([i + width for i in x], avg_astar, width=width, label="A*", align="center")
+# plt.xticks([i + width / 2 for i in x], pair_types)
+# plt.ylabel("Average Runtime (seconds)")
+# plt.title("Dijkstra vs A* Runtime by Pair Type")
+# plt.legend()
+# plt.grid(axis="y")
+# plt.tight_layout()
+# plt.show()
+
+# #  Average Transfers 
+# plt.figure(figsize=(8, 5))
+# plt.bar(pair_types, avg_transfers, color="gray")
+# plt.ylabel("Average Transfers")
+# plt.title("Average Transfers by Pair Type")
+# plt.grid(axis="y")
+# plt.tight_layout()
+# plt.show()
+
+# # Sample Size
+# plt.figure(figsize=(8, 5))
+# plt.bar(pair_types, counts, color="lightblue")
+# plt.ylabel("Number of Pairs Sampled")
+# plt.title("Sample Count by Pair Type")
+# plt.grid(axis="y")
+# plt.tight_layout()
+# plt.show()

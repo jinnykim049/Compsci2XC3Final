@@ -333,10 +333,9 @@ for (u, v), line in graph.line.items():
     station_lines[v].add(line)
 
 def pair_type(src, dst):
-    shared = station_lines[src] & station_lines[dst]#share the same src and dst
-    if shared:
-        return "same_line"
-    elif any(station_lines[dst] & station_lines[n] for n in graph.graph[src]):# share same dst, does not directlly connect with src but through another point
+    if transfers == 1:
+       return "same_line"
+    elif transfers == 2:
         return "adjacent_line"
     else:
         return "multi_transfer"

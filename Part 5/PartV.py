@@ -342,38 +342,7 @@ def pair_type(src, dst, transfers):
         return "adjacent_line"
     else:
         return "multi_transfer"
-    
-# known_same_line_pairs = [
-#     (1, 52),     
-#     (73, 182),  
-#     (11, 83),   
-#     (4, 27),     
-#     (74, 287),  
-# ]
 
-# for src, dst in known_same_line_pairs:
-#     print(f"\nTesting: {src} → {dst}")
-
-#     # Dijkstra
-#     t1 = time.perf_counter()
-#     dijkstra_result, d_len = dijkstra(graph, src, dst)
-#     dijkstra_time = time.perf_counter() - t1
-
-#     # A*
-#     t2 = time.perf_counter()
-#     astar_result, a_len = A_Star(graph, src, dst)
-#     astar_time = time.perf_counter() - t2
-
-#     if dijkstra_result == math.inf or astar_result == math.inf:
-#         print("No path found.")
-#         continue
-
-#     path, transfers = dijkstra_result
-#     print("Path:", path)
-#     print("Transfers:", transfers)
-#     print("Dijkstra Time:", round(dijkstra_time, 6), "seconds")
-#     print("A* Time:", round(astar_time, 6), "seconds")
-#     print("Pair Type:", pair_type(src, dst, transfers))
 
 
 results = []

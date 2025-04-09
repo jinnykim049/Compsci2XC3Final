@@ -130,6 +130,9 @@ class Bellman_Ford(SPAlgorithm):
 
 class A_Star(SPAlgorithm):
     def calc_sp(self, graph: HeuristicGraph, source: int, dest: int):
+        return A_Star(graph, source, dest, graph.get_heuristic())
+        
+    def A_Star(graph, source, dest, h): 
         #Initialization
         dist = {}
         prev = {}
@@ -137,7 +140,6 @@ class A_Star(SPAlgorithm):
             dist[node] = math.inf
             prev[node] = None
         dist[source] = 0
-        h = graph.get_heuristic()
         pq = [(h[source], source)]#f's are computed as needed
         # streamlined the comparison with how Python auto compares first value in a tuple first
         

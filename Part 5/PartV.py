@@ -6,6 +6,7 @@ import pandas as pd
 import random
 import matplotlib.pyplot as plt
 from io import StringIO
+import numpy as np
 
 # data structures and useful functions ----------------------------------------------
 class WeightedGraph: 
@@ -385,8 +386,21 @@ avg_astar = []
 avg_transfers = []
 counts = []
 
+for p in pair_types:
+    subset = df[df["pair_type"] == p]
+    if not subset.empty:
+        avg_dijkstra.append(subset["dijkstra_time"].mean())
+        avg_astar.append(subset["astar_time"].mean())
+        avg_transfers.append(subset["transfers"].mean())
+        counts.append(len(subset))
+    else:
+        avg_dijkstra.append(0)
+        avg_astar.append(0)
+        avg_transfers.append(0)
+        counts.append(0) 
+
 #  Runtime Comparison 
-x = range(len(pair_types))
+x = np.arange(len(pair_types))
 width = 0.35
 
 plt.figure(figsize=(10, 6))

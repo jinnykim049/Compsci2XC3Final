@@ -179,7 +179,7 @@ def dijkstra(graph, source, k):
 
 
 #2.2 Bellman Ford's
-def bellman_ford(graph, source, k):
+def bellman_ford(graph, source, destination=None, k=None):
 
     #initialization
     dist = {}
@@ -191,8 +191,9 @@ def bellman_ford(graph, source, k):
         
     dist[source] = 0
     
+    relaxations = k if k is not None else len(graph.adj) - 1
     #edge relaxation
-    for _ in range(k): #only k times
+    for _ in range(relaxations): #only k times
         
         for src in graph.adj:
             for dst in graph.adj[src]: #two for loops together gets every edge (src, dst)
@@ -334,12 +335,19 @@ def experiment_accuracy():
     # Test k-value effect (fixing size to 100 nodes and density to 0.5)
     graph = create_random_graph(100, int(100 * 99 * 0.5), 1, 10)
     true_distances, _ = bellman_ford(graph, 0, 100-1)
-    for k in k_values:
-        est_distances, _ = dijkstra(graph, 0, k)
-        dijkstra_k_accuracy.append(calculate_accuracy(true_distances, est_distances))
+    fixed_dst = 99  # or 100 - 1
 
-        est_distances, _ = bellman_ford(graph, 0, k)
-        bellman_k_accuracy.append(calculate_accuracy(true_distances, est_distances))
+    # Use Bellman-Ford with unlimited k to get true distances
+    true_distances, _ = bellman_ford(graph, 0, fixed_dst)
+
+    for k in k_values:
+        # Dijkstra doesn't depend on k
+        dijkstra_est, _ = dijkstra(graph, 0, fixed_dst)
+        dijkstra_k_accuracy.append(calculate_accuracy(true_distances, dijkstra_est))
+
+        # Bellman-Ford uses current k
+        bellman_est, _ = bellman_ford(graph, 0, fixed_dst, k)
+        bellman_k_accuracy.append(calculate_accuracy(true_distances, bellman_est))
 
         
     # Plot accuracy vs. graph size (Bar Chart)
